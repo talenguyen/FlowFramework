@@ -7,8 +7,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.tale.flowframework.Result;
+import com.tale.flowframework.FlowService;
 import com.tale.flowframework.IView;
+import com.tale.flowframework.Result;
 import com.tale.flowframeworkdemo.flow.MessageFlow;
 import com.tale.flowframeworkdemo.model.Message;
 
@@ -17,6 +18,7 @@ public class MainActivity extends AppCompatActivity implements IView<Message> {
 
     private TextView tvMessage;
     private MessageFlow flow;
+    private boolean isServiceRunning;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +30,15 @@ public class MainActivity extends AppCompatActivity implements IView<Message> {
             @Override
             public void onClick(View view) {
                 tvMessage.setText("Getting...");
-                flow.start();
+                flow.start(null);
+            }
+        });
+        findViewById(R.id.btGetMessageService).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                tvMessage.setText("Getting Service...");
+                FlowService.start(MainActivity.this, DemoApp.MESSAGE_FLOW);
+                isServiceRunning = true;
             }
         });
         if (flow.isRunning()) {
@@ -51,7 +61,10 @@ public class MainActivity extends AppCompatActivity implements IView<Message> {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        flow.cancel(null);
+        if (!isServiceRunning) {
+
+            flow.cancel(null);
+        }
     }
 
     @Override
@@ -78,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements IView<Message> {
 
     @Override
     public void renderResult(Result<Message> data) {
+        isServiceRunning = false;
         if (data.success) {
             tvMessage.setText(data.data.message);
         }

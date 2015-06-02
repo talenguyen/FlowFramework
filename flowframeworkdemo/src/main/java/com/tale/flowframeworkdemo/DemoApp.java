@@ -1,15 +1,15 @@
 package com.tale.flowframeworkdemo;
 
-import android.app.Application;
-
+import com.tale.flowframework.FlowApp;
 import com.tale.flowframeworkdemo.flow.MessageFlow;
 import com.tale.flowframeworkdemo.model.MessageModel;
 
 /**
  * Author tale. Created on 6/2/15.
  */
-public class DemoApp extends Application {
+public class DemoApp extends FlowApp {
 
+    public static final String MESSAGE_FLOW = "MessageFlow";
     private MessageFlow messageFlow;
 
     public MessageFlow getMessageFlow() {
@@ -17,5 +17,11 @@ public class DemoApp extends Application {
             messageFlow = new MessageFlow(new MessageModel());
         }
         return messageFlow;
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        addFlow(MESSAGE_FLOW, getMessageFlow());
     }
 }

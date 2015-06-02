@@ -11,7 +11,7 @@ import java.util.Date;
 public class MessageModel {
 
     public Message getMessage() {
-        SystemClock.sleep(2000);
+        SystemClock.sleep(5000);
         return new Message("Message - " + DateFormat.getDateInstance().format(new Date()));
     }
 }
