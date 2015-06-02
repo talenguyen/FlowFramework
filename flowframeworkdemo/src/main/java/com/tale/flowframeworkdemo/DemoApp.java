@@ -1,5 +1,6 @@
 package com.tale.flowframeworkdemo;
 
+import com.squareup.leakcanary.LeakCanary;
 import com.tale.flowframework.FlowApp;
 import com.tale.flowframeworkdemo.flow.MessageFlow;
 import com.tale.flowframeworkdemo.model.MessageModel;
@@ -23,5 +24,6 @@ public class DemoApp extends FlowApp {
     public void onCreate() {
         super.onCreate();
         addFlow(MESSAGE_FLOW, getMessageFlow());
+        LeakCanary.install(this);
     }
 }
