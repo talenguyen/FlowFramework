@@ -63,7 +63,7 @@ public abstract class Flow<Data> {
             stopCanceling();
         } else {
             onStart();
-            startCallbackWeakReference = new WeakReference<Callback>(callback);
+            startCallbackWeakReference = new WeakReference<>(callback);
             isRunning = true;
         }
     }
@@ -114,15 +114,15 @@ public abstract class Flow<Data> {
     }
 
     /**
-     * @param data
+     * @param result The {@link Result} object which will be handle by {@link IView} class.
      */
-    protected void publishResult(Result<Data> data) {
+    protected void publishResult(Result<Data> result) {
         clearDelayJobs();
         final IView<Data> view = iViewWeakReference == null ? null : iViewWeakReference.get();
         if (view == null) {
-            result = data;
+            this.result = result;
         } else {
-            view.renderResult(data);
+            view.renderResult(result);
         }
         isRunning = false;
         Callback cb = startCallbackWeakReference == null ? null : startCallbackWeakReference.get();
@@ -131,9 +131,13 @@ public abstract class Flow<Data> {
         }
     }
 
-    protected abstract void onStart();
+    protected void onStart() {
 
-    protected abstract void onCancel();
+    }
+
+    protected void onCancel() {
+
+    }
 
     private void postJobDelay(Runnable runnable, long duration) {
         if (delayJob != null) {
