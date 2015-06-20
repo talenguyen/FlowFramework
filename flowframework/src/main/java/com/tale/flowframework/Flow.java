@@ -14,7 +14,7 @@ public abstract class Flow<Data> {
     private WeakReference<Callback> stopCallbackWeakReference;
     private WeakReference<Callback> startCallbackWeakReference;
     private Runnable delayJob;
-    private WeakReference<IView<Data>> iViewWeakReference;
+    private WeakReference<ResultHandler> resultHandlerWeakReference;
     private Result<Data> result;
     private boolean isCanceling;
     private boolean isRunning;
@@ -29,12 +29,12 @@ public abstract class Flow<Data> {
      *
      * @param view The view which will render result.
      */
-    public void connect(IView<Data> view) {
+    public void connect(ResultHandler view) {
         // S1. Cache view to use later.
-        iViewWeakReference = new WeakReference<>(view);
+        resultHandlerWeakReference = new WeakReference<>(view);
         // If there is result already then show result.
         if (result != null) {
-            view.renderResult(result);
+            view.onResult(result);
             result = null;
         }
         // If canceling
@@ -48,8 +48,8 @@ public abstract class Flow<Data> {
      */
     public void disconnect() {
         // Clear references
-        iViewWeakReference.clear();
-        iViewWeakReference = null;
+        resultHandlerWeakReference.clear();
+        resultHandlerWeakReference = null;
     }
 
     /**
@@ -114,15 +114,15 @@ public abstract class Flow<Data> {
     }
 
     /**
-     * @param result The {@link Result} object which will be handle by {@link IView} class.
+     * @param result The {@link Result} object which will be handle by {@link ResultHandler} class.
      */
     protected void publishResult(Result<Data> result) {
         clearDelayJobs();
-        final IView<Data> view = iViewWeakReference == null ? null : iViewWeakReference.get();
+        final ResultHandler view = resultHandlerWeakReference == null ? null : resultHandlerWeakReference.get();
         if (view == null) {
             this.result = result;
         } else {
-            view.renderResult(result);
+            view.onResult(result);
         }
         isRunning = false;
         Callback cb = startCallbackWeakReference == null ? null : startCallbackWeakReference.get();
@@ -155,4 +155,5 @@ public abstract class Flow<Data> {
     public boolean isRunning() {
         return isRunning;
     }
+
 }

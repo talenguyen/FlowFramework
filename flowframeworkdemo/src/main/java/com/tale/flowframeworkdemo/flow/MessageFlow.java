@@ -34,7 +34,7 @@ public class MessageFlow extends Flow<Message> {
             protected void onPostExecute(Message message) {
                 super.onPostExecute(message);
                 if (!isCancelled()) {
-                    publishResult(new Result<>(message != null, message, null));
+                    publishResult(new Result<>(0, message != null, message, null));
                 }
             }
         };

@@ -8,13 +8,13 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.tale.flowframework.FlowService;
-import com.tale.flowframework.IView;
 import com.tale.flowframework.Result;
+import com.tale.flowframework.ResultHandler;
 import com.tale.flowframeworkdemo.flow.MessageFlow;
 import com.tale.flowframeworkdemo.model.Message;
 
 
-public class MainActivity extends AppCompatActivity implements IView<Message> {
+public class MainActivity extends AppCompatActivity implements ResultHandler {
 
     private TextView tvMessage;
     private MessageFlow flow;
@@ -90,10 +90,10 @@ public class MainActivity extends AppCompatActivity implements IView<Message> {
     }
 
     @Override
-    public void renderResult(Result<Message> data) {
+    public void onResult(Result<?> result) {
         isServiceRunning = false;
-        if (data.success) {
-            tvMessage.setText(data.data.message);
+        if (result.success) {
+            tvMessage.setText(((Message) result.data).message);
         }
     }
 }
