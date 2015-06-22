@@ -14,42 +14,34 @@ public abstract class Flow<Data> {
     private WeakReference<Callback> stopCallbackWeakReference;
     private WeakReference<Callback> startCallbackWeakReference;
     private Runnable delayJob;
-    private WeakReference<ResultHandler> resultHandlerWeakReference;
+    private WeakReference<Publisher<Data>> resultHandlerWeakReference;
     private Result<Data> result;
     private boolean isCanceling;
     private boolean isRunning;
 
     /**
-     * Call to connect view.
+     * Call to setPublisher publisher.
      * <p>
-     * 1. Cache view to use later.<br/>
+     * 1. Cache publisher to use later.<br/>
      * 2. If there is result already then show result.<br/>
      * 3. If canceling then stop cancel.
      * </p>
      *
-     * @param view The view which will render result.
+     * @param publisher The publisher which will render result.
      */
-    public void connect(ResultHandler view) {
-        // S1. Cache view to use later.
-        resultHandlerWeakReference = new WeakReference<>(view);
+    public void setPublisher(Publisher<Data> publisher) {
+        Asserts.assertNotNull(publisher);
+        // S1. Cache publisher to use later.
+        resultHandlerWeakReference = new WeakReference<>(publisher);
         // If there is result already then show result.
         if (result != null) {
-            view.onResult(result);
+            publisher.publish(result);
             result = null;
         }
         // If canceling
         if (isCanceling) {
             stopCanceling();
         }
-    }
-
-    /**
-     * Disconnect view from Flow.
-     */
-    public void disconnect() {
-        // Clear references
-        resultHandlerWeakReference.clear();
-        resultHandlerWeakReference = null;
     }
 
     /**
@@ -114,15 +106,15 @@ public abstract class Flow<Data> {
     }
 
     /**
-     * @param result The {@link Result} object which will be handle by {@link ResultHandler} class.
+     * @param result The {@link Result} object which will be handle by {@link Publisher} class.
      */
     protected void publishResult(Result<Data> result) {
         clearDelayJobs();
-        final ResultHandler view = resultHandlerWeakReference == null ? null : resultHandlerWeakReference.get();
-        if (view == null) {
+        final Publisher<Data> publisher = resultHandlerWeakReference == null ? null : resultHandlerWeakReference.get();
+        if (publisher == null) {
             this.result = result;
         } else {
-            view.onResult(result);
+            publisher.publish(result);
         }
         isRunning = false;
         Callback cb = startCallbackWeakReference == null ? null : startCallbackWeakReference.get();
