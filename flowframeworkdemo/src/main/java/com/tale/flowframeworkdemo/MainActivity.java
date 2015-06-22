@@ -7,23 +7,36 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
+import com.squareup.otto.ThreadEnforcer;
 import com.tale.flowframework.FlowService;
+import com.tale.flowframework.Publisher;
 import com.tale.flowframework.Result;
-import com.tale.flowframework.ResultHandler;
 import com.tale.flowframeworkdemo.flow.MessageFlow;
 import com.tale.flowframeworkdemo.model.Message;
 
 
-public class MainActivity extends AppCompatActivity implements ResultHandler {
+public class MainActivity extends AppCompatActivity {
 
     private TextView tvMessage;
     private MessageFlow flow;
     private boolean isServiceRunning;
 
+    private Bus bus = new Bus(ThreadEnforcer.MAIN);
+    private Publisher<Message> publisher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         flow = ((DemoApp) getApplication()).getMessageFlow();
+        publisher = new Publisher<Message>() {
+            @Override
+            public void publish(Result<Message> result) {
+                bus.post(result);
+            }
+        };
+        flow.setPublisher(publisher);
         setContentView(R.layout.activity_main);
         tvMessage = ((TextView) findViewById(R.id.tvMessage));
         findViewById(R.id.btGetMessage).setOnClickListener(new View.OnClickListener() {
@@ -49,13 +62,13 @@ public class MainActivity extends AppCompatActivity implements ResultHandler {
     @Override
     protected void onResume() {
         super.onResume();
-        flow.connect(this);
+        bus.register(this);
     }
 
     @Override
     protected void onPause() {
+        bus.unregister(this);
         super.onPause();
-        flow.disconnect();
     }
 
     @Override
@@ -89,11 +102,11 @@ public class MainActivity extends AppCompatActivity implements ResultHandler {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onResult(Result<?> result) {
+    @Subscribe
+    public void onResult(Result<Message> result) {
         isServiceRunning = false;
         if (result.success) {
-            tvMessage.setText(((Message) result.data).message);
+            tvMessage.setText(result.data.message);
         }
     }
 }
